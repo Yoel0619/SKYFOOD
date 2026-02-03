@@ -9,6 +9,16 @@ class RestaurantController extends Controller
         return Restaurant::all();
     }
 
+    public function view()
+{
+    $restaurants = Restaurant::all();
+    return view('restaurant.index', compact('restaurants'));
+}
+    public function detailedView($id)
+    {
+        $restaurant = Restaurant::with('menus.items.reviews')->findOrFail($id);
+        return view('restaurant.detail', compact('restaurant'));
+    }
     public function show($id)
     {
         return Restaurant::findOrFail($id);

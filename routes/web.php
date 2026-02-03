@@ -1,40 +1,69 @@
+
+
 <?php
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\MenuController;
-use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderItemController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\ReviewController;
 
-Route::post('/restaurant', [RestaurantController::class, 'store']);
-Route::get('/restaurant', [RestaurantController::class, 'index']);
-Route::get('/restaurant/{id}', [RestaurantController::class, 'show']);
-Route::put('/restaurant/{id}', [RestaurantController::class, 'update']);
-Route::delete('/restaurant/{id}', [RestaurantController::class, 'destroy']);
+use App\Http\Controllers\Admin\MenuItemController;
+use App\Http\Controllers\Admin\OrderManagementController;
 
-Route::post('/menu', [MenuController::class, 'store']);
-Route::get('/menu', [MenuController::class, 'index']);
-Route::put('/menu/{id}', [MenuController::class, 'update']);
-Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
+// Public routes
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
 
-Route::post('/menu-item', [MenuItemController::class, 'store']);
-Route::put('/menu-item/{id}', [MenuItemController::class, 'update']);
-Route::delete('/menu-item/{id}', [MenuItemController::class, 'destroy']);
+// Auth routes
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::post('/order', [OrderController::class, 'store']);
-Route::get('/order', [OrderController::class, 'index']);
-Route::put('/order/{id}', [OrderController::class, 'update']);
+// Menu routes
+Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+Route::get('/api/menu/items', [MenuController::class, 'getItems']);
+Route::get('/api/menu/items/{id}', [MenuController::class, 'show']);
 
-Route::post('/order-item', [OrderItemController::class, 'store']);
-Route::get('/order-item', [OrderItemController::class, 'index']);
-Route::put('/order-item/{id}', [OrderItemController::class, 'update']);
-Route::delete('/order-item/{id}', [OrderItemController::class, 'destroy']);
+// Protected routes
+Route::middleware('auth')->group(function () {
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/api/orders', [OrderController::class, 'getOrders']);
+    Route::post('/api/orders', [OrderController::class, 'store']);
+    Route::get('/api/orders/{id}', [OrderController::class, 'show']);
 
-Route::post('/payment', [PaymentController::class, 'store']);
+    // Cart/Checkout
+    Route::get('/cart', function () {
+        return view('cart.index');
+    })->name('cart.index');
 
-Route::post('/delivery', [DeliveryController::class, 'store']);
+    Route::get('/checkout', function () {
+        return view('checkout.index');
+    })->name('checkout.index');
+});
 
-Route::post('/review', [ReviewController::class, 'store']);
+// Admin routes
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Menu management
+    Route::get('/menu', [MenuItemController::class, 'index'])->name('admin.menu.index');
+    Route::get('/api/menu/items', [MenuItemController::class, 'getItems']);
+    Route::post('/api/menu/items', [MenuItemController::class, 'store']);
+    Route::put('/api/menu/items/{id}', [MenuItemController::class, 'update']);
+    Route::delete('/api/menu/items/{id}', [MenuItemController::class, 'destroy']);
+    
+    // Order management
+    Route::get('/orders', [OrderManagementController::class, 'index'])->name('admin.orders.index');
+    Route::get('/api/orders', [OrderManagementController::class, 'getOrders']);
+    Route::put('/api/orders/{id}/status', [OrderManagementController::class, 'updateStatus']);
+});
+use App\Http\Controllers\Admin\DashboardController;
+
+// Admin dashboard stats
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/api/dashboard/stats', [DashboardController::class, 'getStats']);
+});
