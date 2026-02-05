@@ -2,85 +2,66 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\MenuItem;
 use App\Models\User;
-use App\Models\Restaurant;
+use App\Models\Food;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-   
+    
     public function index()
     {
-        return view('admin.dashboard');
-    }
+        // Statistics
+        $stats = [
+            'total_orders' => Order::count(),
+            'pending_orders' => Order::where('order_status', 'pending')->count(),
+            'total_revenue' => Order::where('payment_status', 'paid')->sum('total_amount'),
+            'total_customers' => User::where('role', 'customer')->count(),
+            'total_foods' => Food::count(),
+            'total_categories' => Category::count(),
+        ];
 
-    public function getStats()
-    {
-        // Total orders
-        $totalOrders = Order::count();
-        
-        // Pending orders
-        $pendingOrders = Order::where('status', 'pending')->count();
-        
-        // Total revenue
-        $totalRevenue = Order::where('status', 'completed')
-            ->sum('total_amount');
-        
-        // Total customers
-        $totalCustomers = User::where('role', 'customer')->count();
-        
         // Recent orders
-        $recentOrders = Order::with(['user', 'restaurant'])
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
+        $recentOrders = Order::with(['user', 'items'])
+            ->latest()
+            ->take(10)
             ->get();
-        
-        // Orders by status
-        $ordersByStatus = Order::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->pluck('count', 'status');
-        
-        // Revenue by day (last 7 days)
-        $revenueByDay = Order::where('status', 'completed')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->select(
+
+        // Sales by day (last 7 days)
+        $salesByDay = Order::select(
                 DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as orders'),
                 DB::raw('SUM(total_amount) as revenue')
             )
+            ->where('created_at', '>=', now()->subDays(7))
+            ->where('payment_status', 'paid')
             ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get();
-        
-        // Top selling items
-        $topItems = DB::table('order_items')
-            ->join('menu_items', 'order_items.menu_item_id', '=', 'menu_items.id')
-            ->select(
-                'menu_items.name',
-                DB::raw('SUM(order_items.quantity) as total_sold'),
-                DB::raw('SUM(order_items.subtotal) as total_revenue')
-            )
-            ->groupBy('menu_items.id', 'menu_items.name')
-            ->orderBy('total_sold', 'desc')
-            ->limit(5)
+            ->orderBy('date')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'stats' => [
-                'total_orders' => $totalOrders,
-                'pending_orders' => $pendingOrders,
-                'total_revenue' => $totalRevenue,
-                'total_customers' => $totalCustomers,
-            ],
-            'recent_orders' => $recentOrders,
-            'orders_by_status' => $ordersByStatus,
-            'revenue_by_day' => $revenueByDay,
-            'top_items' => $topItems,
-        ]);
+        // Top selling foods
+        $topFoods = Food::select('foods.*', DB::raw('SUM(order_items.quantity) as total_sold'))
+            ->join('order_items', 'foods.id', '=', 'order_items.food_id')
+            ->groupBy('foods.id')
+            ->orderBy('total_sold', 'desc')
+            ->take(5)
+            ->get();
+
+        // Orders by status
+        $ordersByStatus = Order::select('order_status', DB::raw('COUNT(*) as count'))
+            ->groupBy('order_status')
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'recentOrders',
+            'salesByDay',
+            'topFoods',
+            'ordersByStatus'
+        ));
     }
 }
