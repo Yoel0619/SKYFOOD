@@ -2,180 +2,176 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
-use App\Models\Food;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Session;
+use Illuminate\Routing\Controller;
 class CartController extends Controller
 {
-  
-    // Display cart page
+    // Show cart page
     public function index()
     {
-        $cartItems = Cart::where('user_id', Auth::id())
-            ->with('food.category')
-            ->get();
+        $cart = Session::get('cart', []);
+        $total = 0;
 
-        $subtotal = $cartItems->sum('subtotal');
-        $tax = $subtotal * 0.16; // 16% VAT
-        $deliveryFee = 5000;
-        $total = $subtotal + $tax + $deliveryFee;
-
-        return view('cart.index', compact('cartItems', 'subtotal', 'tax', 'deliveryFee', 'total'));
-    }
-
-    // Add to cart (AJAX)
-    public function add(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'food_id' => 'required|exists:foods,id',
-            'quantity' => 'required|integer|min:1|max:10',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
         }
 
-        $food = Food::findOrFail($request->food_id);
+        return view('cart.index', compact('cart', 'total'));
+    }
 
-        if (!$food->is_available) {
+    // Add item to cart
+    public function add(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        // Check stock availability
+        if ($product->stock < $request->quantity) {
             return response()->json([
                 'success' => false,
-                'message' => 'This item is currently unavailable'
+                'message' => 'Insufficient stock. Only ' . $product->stock . ' items available.'
             ], 400);
         }
 
-        $cartItem = Cart::where('user_id', Auth::id())
-            ->where('food_id', $request->food_id)
-            ->first();
+        // Check product status
+        if ($product->status !== 'available') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product is currently unavailable.'
+            ], 400);
+        }
 
-        if ($cartItem) {
-            $cartItem->quantity += $request->quantity;
-            $cartItem->save();
+        $cart = Session::get('cart', []);
+
+        // If product already in cart, update quantity
+        if (isset($cart[$product->id])) {
+            $newQuantity = $cart[$product->id]['quantity'] + $request->quantity;
+            
+            if ($newQuantity > $product->stock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot add more. Stock limit reached.'
+                ], 400);
+            }
+
+            $cart[$product->id]['quantity'] = $newQuantity;
         } else {
-            Cart::create([
-                'user_id' => Auth::id(),
-                'food_id' => $request->food_id,
+            // Add new product to cart
+            $cart[$product->id] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
                 'quantity' => $request->quantity,
+                'image' => $product->image,
+            ];
+        }
+
+        Session::put('cart', $cart);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product added to cart successfully',
+            'cart_count' => count($cart)
+        ]);
+    }
+
+    // Update cart item quantity
+    public function update(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+        $cart = Session::get('cart', []);
+
+        if (!isset($cart[$product->id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found in cart.'
+            ], 404);
+        }
+
+        // Check stock availability
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Insufficient stock. Only ' . $product->stock . ' items available.'
+            ], 400);
+        }
+
+        $cart[$product->id]['quantity'] = $request->quantity;
+        Session::put('cart', $cart);
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cart updated successfully',
+            'subtotal' => $cart[$product->id]['price'] * $request->quantity,
+            'total' => $total
+        ]);
+    }
+
+    // Remove item from cart
+    public function remove(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $cart = Session::get('cart', []);
+
+        if (isset($cart[$request->product_id])) {
+            unset($cart[$request->product_id]);
+            Session::put('cart', $cart);
+
+            $total = 0;
+            foreach ($cart as $item) {
+                $total += $item['price'] * $item['quantity'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product removed from cart',
+                'cart_count' => count($cart),
+                'total' => $total
             ]);
         }
 
-        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-
         return response()->json([
-            'success' => true,
-            'message' => 'Item added to cart',
-            'cart_count' => $cartCount
-        ]);
-    }
-
-    // Update cart quantity (AJAX)
-    public function update(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'cart_id' => 'required|exists:cart,id',
-            'quantity' => 'required|integer|min:1|max:10',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $cartItem = Cart::where('id', $request->cart_id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
-
-        $subtotal = $cartItem->subtotal;
-        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-
-        // Recalculate totals
-        $allItems = Cart::where('user_id', Auth::id())->with('food')->get();
-        $cartSubtotal = $allItems->sum('subtotal');
-        $tax = $cartSubtotal * 0.16;
-        $deliveryFee = 5000;
-        $total = $cartSubtotal + $tax + $deliveryFee;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cart updated',
-            'item_subtotal' => number_format($subtotal, 2),
-            'cart_subtotal' => number_format($cartSubtotal, 2),
-            'tax' => number_format($tax, 2),
-            'total' => number_format($total, 2),
-            'cart_count' => $cartCount
-        ]);
-    }
-
-    // Remove from cart (AJAX)
-    public function remove(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'cart_id' => 'required|exists:cart,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $cartItem = Cart::where('id', $request->cart_id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $cartItem->delete();
-
-        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-
-        // Recalculate totals
-        $allItems = Cart::where('user_id', Auth::id())->with('food')->get();
-        $cartSubtotal = $allItems->sum('subtotal');
-        $tax = $cartSubtotal * 0.16;
-        $deliveryFee = $cartSubtotal > 0 ? 5000 : 0;
-        $total = $cartSubtotal + $tax + $deliveryFee;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item removed from cart',
-            'cart_subtotal' => number_format($cartSubtotal, 2),
-            'tax' => number_format($tax, 2),
-            'delivery_fee' => number_format($deliveryFee, 2),
-            'total' => number_format($total, 2),
-            'cart_count' => $cartCount
-        ]);
+            'success' => false,
+            'message' => 'Product not found in cart.'
+        ], 404);
     }
 
     // Clear entire cart
     public function clear()
     {
-        Cart::where('user_id', Auth::id())->delete();
+        Session::forget('cart');
 
         return response()->json([
             'success' => true,
-            'message' => 'Cart cleared'
+            'message' => 'Cart cleared successfully'
         ]);
     }
 
-    // Get cart count (AJAX)
+    // Get cart count
     public function count()
     {
-        $count = Cart::where('user_id', Auth::id())->sum('quantity');
-
+        $cart = Session::get('cart', []);
         return response()->json([
-            'success' => true,
-            'count' => $count
+            'count' => count($cart)
         ]);
     }
 }

@@ -2,56 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\UserAddress;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controller;
 
 class OrderController extends Controller
 {
-   
+    // Display all orders
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $query = Order::with(['user', 'orderItems.product']);
+
+        // Admin can see all orders, customers only their own
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $query->where('order_number', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('user', function($q) use ($request) {
+                      $q->where('name', 'like', '%' . $request->search . '%');
+                  });
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('orders.index', compact('orders'));
+    }
+
     // Show checkout page
     public function checkout()
     {
-        $cartItems = Cart::where('user_id', Auth::id())
-            ->with('food')
-            ->get();
+        $cart = Session::get('cart', []);
 
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('menu.index')
-                ->with('error', 'Your cart is empty');
+        if (empty($cart)) {
+            return redirect()->route('products.index')->with('error', 'Your cart is empty');
         }
 
-        $addresses = UserAddress::where('user_id', Auth::id())->get();
-        $defaultAddress = $addresses->where('is_default', true)->first();
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
 
-        $subtotal = $cartItems->sum('subtotal');
-        $tax = $subtotal * 0.16;
-        $deliveryFee = 5000;
-        $total = $subtotal + $tax + $deliveryFee;
-
-        return view('orders.checkout', compact(
-            'cartItems',
-            'addresses',
-            'defaultAddress',
-            'subtotal',
-            'tax',
-            'deliveryFee',
-            'total'
-        ));
+        return view('orders.checkout', compact('cart', 'total'));
     }
 
-    // Place order
+    // Process checkout and create order
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'delivery_address_id' => 'required|exists:user_addresses,id',
-            'payment_method' => 'required|in:cash,card,mobile_money',
-            'special_instructions' => 'nullable|string|max:500',
+            'delivery_address' => 'required|string|max:500',
+            'phone' => 'required|string|max:15',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -61,111 +81,132 @@ class OrderController extends Controller
             ], 422);
         }
 
-        // Verify address belongs to user
-        $address = UserAddress::where('id', $request->delivery_address_id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $cart = Session::get('cart', []);
 
-        $cartItems = Cart::where('user_id', Auth::id())
-            ->with('food')
-            ->get();
-
-        if ($cartItems->isEmpty()) {
+        if (empty($cart)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Your cart is empty'
             ], 400);
         }
 
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login first'
+            ], 401);
+        }
+
         DB::beginTransaction();
 
         try {
-            // Calculate totals
-            $subtotal = $cartItems->sum('subtotal');
-            $tax = $subtotal * 0.16;
-            $deliveryFee = 5000;
-            $total = $subtotal + $tax + $deliveryFee;
+            $totalAmount = 0;
+
+            // Verify all products and calculate total
+            foreach ($cart as $item) {
+                $product = Product::findOrFail($item['id']);
+
+                if ($product->stock < $item['quantity']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $product->name . ' has insufficient stock.'
+                    ], 400);
+                }
+
+                if ($product->status !== 'available') {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $product->name . ' is currently unavailable.'
+                    ], 400);
+                }
+
+                $totalAmount += $product->price * $item['quantity'];
+            }
 
             // Create order
             $order = Order::create([
-                'user_id' => Auth::id(),
-                'delivery_address_id' => $request->delivery_address_id,
-                'subtotal' => $subtotal,
-                'tax_amount' => $tax,
-                'delivery_fee' => $deliveryFee,
-                'total_amount' => $total,
-                'payment_method' => $request->payment_method,
-                'payment_status' => $request->payment_method === 'cash' ? 'pending' : 'paid',
-                'order_status' => 'pending',
-                'special_instructions' => $request->special_instructions,
-                'estimated_delivery_time' => now()->addMinutes(45),
+                'user_id' => $userId,
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'delivery_address' => $request->delivery_address,
+                'phone' => $request->phone,
+                'notes' => $request->notes,
             ]);
 
-            // Create order items
-            foreach ($cartItems as $cartItem) {
+            // Create order items and update stock
+            foreach ($cart as $item) {
+                $product = Product::findOrFail($item['id']);
+
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'food_id' => $cartItem->food_id,
-                    'quantity' => $cartItem->quantity,
-                    'unit_price' => $cartItem->food->final_price,
-                    'subtotal' => $cartItem->subtotal,
+                    'product_id' => $product->id,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                    'subtotal' => $product->price * $item['quantity'],
                 ]);
+
+                // Reduce stock
+                $product->decrement('stock', $item['quantity']);
             }
 
             // Clear cart
-            Cart::where('user_id', Auth::id())->delete();
+            Session::forget('cart');
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully',
-                'order_id' => $order->id,
+                'order_number' => $order->order_number,
                 'redirect' => route('orders.show', $order->id)
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to place order. Please try again.'
+                'message' => 'Failed to create order. Please try again.'
             ], 500);
         }
     }
 
-    // Show order details
-    public function show($id)
+    // Show single order
+    public function show(Order $order)
     {
-        $order = Order::with(['items.food', 'deliveryAddress', 'statusHistory.changedBy'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Check authorization
+        if (!$user->isAdmin() && $order->user_id !== $user->id) {
+            abort(403, 'Unauthorized access');
+        }
+
+        $order->load(['user', 'orderItems.product']);
 
         return view('orders.show', compact('order'));
     }
 
-    // My orders page
-    public function myOrders(Request $request)
+    // Update order status (Admin only)
+    public function updateStatus(Request $request, Order $order)
     {
-        $query = Order::where('user_id', Auth::id())
-            ->with('items.food')
-            ->latest();
+        $user = Auth::user();
 
-        // Filter by status
-        if ($request->has('status') && $request->status != '') {
-            $query->where('order_status', $request->status);
+        if (!$user || !$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
-        $orders = $query->paginate(10);
-
-        return view('orders.index', compact('orders'));
-    }
-
-    // Cancel order
-    public function cancel(Request $request, $id)
-    {
         $validator = Validator::make($request->all(), [
-            'reason' => 'required|string|max:500',
+            'status' => 'required|in:pending,processing,completed,cancelled',
         ]);
 
         if ($validator->fails()) {
@@ -175,20 +216,86 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $order = Order::where('user_id', Auth::id())->findOrFail($id);
-
-        if (!$order->canBeCancelled()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This order cannot be cancelled'
-            ], 400);
-        }
-
-        $order->cancel($request->reason, Auth::id());
+        $order->update(['status' => $request->status]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Order cancelled successfully'
+            'message' => 'Order status updated successfully'
+        ]);
+    }
+
+    // Cancel order
+    public function cancel(Order $order)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login first'
+            ], 401);
+        }
+
+        // Check authorization
+        if (!$user->isAdmin() && $order->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        // Only pending orders can be cancelled
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending orders can be cancelled'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Restore stock
+            foreach ($order->orderItems as $item) {
+                $product = Product::findOrFail($item->product_id);
+                $product->increment('stock', $item->quantity);
+            }
+
+            $order->update(['status' => 'cancelled']);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order cancelled successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel order'
+            ], 500);
+        }
+    }
+
+    // Delete order (Admin only)
+    public function destroy(Order $order)
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $order->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order deleted successfully'
         ]);
     }
 }

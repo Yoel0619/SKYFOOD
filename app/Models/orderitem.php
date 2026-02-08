@@ -11,39 +11,26 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'food_id',
+        'product_id',
         'quantity',
-        'unit_price',
+        'price',
         'subtotal',
-        'special_instructions',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
-        'unit_price' => 'decimal:2',
+        'price' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
 
-    // Relationships
+    // Relationship: Order item belongs to an order
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function food()
+    // Relationship: Order item belongs to a product
+    public function product()
     {
-        return $this->belongsTo(Food::class);
-    }
-
-    // Auto-calculate subtotal
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($orderItem) {
-            if (empty($orderItem->subtotal)) {
-                $orderItem->subtotal = $orderItem->quantity * $orderItem->unit_price;
-            }
-        });
+        return $this->belongsTo(Product::class);
     }
 }

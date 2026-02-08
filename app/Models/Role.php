@@ -5,20 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class Role extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
         'description',
-        'image',
-        'status',
     ];
 
-    // Relationship: Category has many products
-    public function products()
+    // Relationship: One role has many users
+    public function users()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(User::class);
     }
 }
