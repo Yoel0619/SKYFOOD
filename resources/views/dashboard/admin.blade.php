@@ -93,6 +93,35 @@
         </div>
     </div>
     
+    <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-grid">
+        <a href="{{ route('products.create') }}" class="action-card">
+            <i class="fas fa-plus"></i>
+            <span>Add Product</span>
+        </a>
+        <a href="{{ route('products.index') }}" class="action-card">
+            <i class="fas fa-utensils"></i>
+            <span>Manage Products</span>
+        </a>
+        <a href="{{ route('categories.create') }}" class="action-card">
+            <i class="fas fa-plus"></i>
+            <span>Add Category</span>
+        </a>
+        <a href="{{ route('categories.index') }}" class="action-card">
+            <i class="fas fa-list"></i>
+            <span>Manage Categories</span>
+        </a>
+        <a href="{{ route('orders.index') }}" class="action-card">
+            <i class="fas fa-shopping-cart"></i>
+            <span>View Orders</span>
+        </a>
+        <a href="{{ route('users.index') }}" class="action-card">
+            <i class="fas fa-users"></i>
+            <span>Manage Users</span>
+        </a>
+    </div>
+</div>
     <!-- Recent Orders -->
     <div class="card">
         <div class="card-header">

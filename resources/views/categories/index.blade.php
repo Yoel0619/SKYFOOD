@@ -55,12 +55,20 @@
                             <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-sm btn-warning">
                                 Edit
                             </a>
-                            <button 
-                                class="btn btn-sm btn-danger" 
-                                onclick="deleteCategory({{ $category->id }})"
-                            >
-                                Delete
-                            </button>
+                          <div class="action-buttons">
+    <a href="{{ route('categories.show', $category->id) }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-eye"></i> View
+    </a>
+    <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-sm btn-warning">
+        <i class="fas fa-edit"></i> Edit
+    </a>
+    <button 
+        class="btn btn-sm btn-danger" 
+        onclick="deleteItem('/categories/{{ $category->id }}', 'Delete {{ $category->name }}?')"
+    >
+        <i class="fas fa-trash"></i> Delete
+    </button>
+</div>
                         </td>
                     </tr>
                     @empty

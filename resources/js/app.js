@@ -20,19 +20,14 @@ async function fetchAPI(url, options = {}) {
         },
     };
 
-    try {
-        const response = await fetch(url, mergedOptions);
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.message || 'Request failed');
-        }
-        
-        return data;
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
+    const response = await fetch(url, mergedOptions);
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Request failed');
     }
+    
+    return await response.json();
 }
 
 // Toast Notification
@@ -87,16 +82,16 @@ async function handleFormSubmit(formId, callback) {
         const method = this.method.toUpperCase();
         
         // Check if form has file uploads
-        const hasFiles = Array.from(formData.entries()).some(([key, value]) => value instanceof File);
+        const hasFiles = Array.from(formData.entries()).some(([key, value]) => value instanceof File && value.size > 0);
         
         try {
             showSpinner();
             
-            let response;
+            let data;
             
             if (hasFiles) {
                 // For file uploads, use FormData
-                response = await fetch(url, {
+                const response = await fetch(url, {
                     method: method,
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -104,37 +99,38 @@ async function handleFormSubmit(formId, callback) {
                     },
                     body: formData
                 });
+                
+                data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Request failed');
+                }
             } else {
                 // For regular forms, use JSON
-                const data = Object.fromEntries(formData);
-                response = await fetchAPI(url, {
+                const jsonData = Object.fromEntries(formData);
+                data = await fetchAPI(url, {
                     method: method,
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(jsonData)
                 });
-            }
-            
-            // Handle file upload response
-            if (hasFiles) {
-                response = await response.json();
             }
             
             hideSpinner();
             
-            if (response.success) {
-                showToast(response.message, 'success');
+            if (data.success) {
+                showToast(data.message, 'success');
                 
-                if (response.redirect) {
+                if (data.redirect) {
                     setTimeout(() => {
-                        window.location.href = response.redirect;
+                        window.location.href = data.redirect;
                     }, 1000);
                 } else if (callback) {
-                    callback(response);
+                    callback(data);
                 }
             } else {
-                if (response.errors) {
-                    displayFormErrors(formId, response.errors);
+                if (data.errors) {
+                    displayFormErrors(formId, data.errors);
                 } else {
-                    showToast(response.message || 'Operation failed', 'error');
+                    showToast(data.message || 'Operation failed', 'error');
                 }
             }
         } catch (error) {
@@ -206,9 +202,33 @@ function previewImage(input, previewId) {
         
         reader.onload = function(e) {
             preview.src = e.target.result;
+            preview.style.display = 'block';
         };
         
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Generic DELETE Function
+async function deleteItem(url, message = 'Delete this item?') {
+    if (!confirm(message)) return;
+    
+    try {
+        showSpinner();
+        
+        const response = await fetchAPI(url, {
+            method: 'DELETE'
+        });
+        
+        hideSpinner();
+        
+        if (response.success) {
+            showToast(response.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (error) {
+        hideSpinner();
+        showToast(error.message || 'Failed to delete', 'error');
     }
 }
 
@@ -224,305 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update cart badge on page load
-    updateCartBadge();
-});    
-// DELETE FUNCTIONS FOR ALL RESOURCES
-
-// Delete Product
-async function deleteProduct(productId) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/products/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete product', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete product', 'error');
-        console.error('Delete error:', error);
+    if (document.querySelector('.cart-badge')) {
+        updateCartBadge();
     }
-}
-
-// Delete Category
-async function deleteCategory(categoryId) {
-    if (!confirm('Are you sure you want to delete this category?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/categories/${categoryId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete category', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete category', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Delete User
-async function deleteUser(userId) {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete user', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete user', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Delete Role
-async function deleteRole(roleId) {
-    if (!confirm('Are you sure you want to delete this role?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/roles/${roleId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete role', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete role', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Delete Order
-async function deleteOrder(orderId) {
-    if (!confirm('Are you sure you want to delete this order? This cannot be undone!')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/orders/${orderId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete order', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete order', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Delete Payment
-async function deletePayment(paymentId) {
-    if (!confirm('Are you sure you want to delete this payment record?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/payments/${paymentId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete payment', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete payment', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Delete Delivery
-async function deleteDelivery(deliveryId) {
-    if (!confirm('Are you sure you want to delete this delivery?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/deliveries/${deliveryId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to delete delivery', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to delete delivery', 'error');
-        console.error('Delete error:', error);
-    }
-}
-
-// Cancel Order (Customer)
-async function cancelOrder(orderId) {
-    if (!confirm('Are you sure you want to cancel this order?')) return;
-    
-    try {
-        showSpinner();
-        
-        const response = await fetch(`/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message || 'Failed to cancel order', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to cancel order', 'error');
-        console.error('Cancel error:', error);
-    }
-}
-
-// Add to Cart
-async function addToCart(productId, quantity = 1) {
-    try {
-        showSpinner();
-        
-        const response = await fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                product_id: productId,
-                quantity: quantity
-            })
-        });
-        
-        const result = await response.json();
-        
-        hideSpinner();
-        
-        if (result.success) {
-            showToast(result.message, 'success');
-            updateCartBadge();
-        } else {
-            showToast(result.message || 'Failed to add to cart', 'error');
-        }
-    } catch (error) {
-        hideSpinner();
-        showToast('Failed to add to cart', 'error');
-        console.error('Add to cart error:', error);
-    }
-}
+});

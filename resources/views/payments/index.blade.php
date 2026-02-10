@@ -103,9 +103,12 @@
                                     <a href="{{ route('payments.edit', $payment->id) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-                                    <button class="btn btn-sm btn-danger" onclick="deletePayment({{ $payment->id }})">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                                    <button 
+    class="btn btn-sm btn-danger" 
+    onclick="deleteItem('/payments/{{ $payment->id }}', 'Delete this payment?')"
+>
+    <i class="fas fa-trash"></i> Delete
+</button>
                                 </div>
                             </td>
                         </tr>

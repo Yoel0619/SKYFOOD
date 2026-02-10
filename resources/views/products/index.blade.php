@@ -143,12 +143,12 @@
                             <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning">
                                 ✏️ Edit
                             </a>
-                            <button 
-                                class="btn btn-sm btn-danger" 
-                                onclick="deleteProduct({{ $product->id }})"
-                            >
-                                🗑️ Delete
-                            </button>
+                           <button 
+    class="btn btn-sm btn-danger" 
+    onclick="deleteItem('/products/{{ $product->id }}', 'Delete {{ $product->name }}?')"
+>
+    <i class="fas fa-trash"></i> Delete
+</button>
                         @endif
                     </div>
                 </div>
@@ -386,3 +386,19 @@ document.getElementById('searchInput').addEventListener('keypress', (e) => {
 });
 </script>
 @endpush
+<div class="action-buttons">
+    <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-eye"></i> View
+    </a>
+    @if(auth()->user()->isAdmin())
+        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <button 
+            class="btn btn-sm btn-danger" 
+            onclick="deleteItem('/products/{{ $product->id }}', 'Delete {{ $product->name }}?')"
+        >
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    @endif
+</div>

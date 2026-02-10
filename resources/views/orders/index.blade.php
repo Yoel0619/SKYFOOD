@@ -82,6 +82,14 @@
                             <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-primary">
                                 View
                             </a>
+                            @if(auth()->user()->isAdmin())
+    <button 
+        class="btn btn-sm btn-danger" 
+        onclick="deleteItem('/orders/{{ $order->id }}', 'Delete order {{ $order->order_number }}?')"
+    >
+        <i class="fas fa-trash"></i> Delete
+    </button>
+@endif
                             
                             @if(auth()->user()->isCustomer() && $order->status == 'pending')
                                 <button 

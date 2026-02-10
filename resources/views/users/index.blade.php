@@ -90,11 +90,11 @@
                                 Toggle Status
                             </button>
                             <button 
-                                class="btn btn-sm btn-danger" 
-                                onclick="deleteUser({{ $user->id }})"
-                            >
-                                Delete
-                            </button>
+    class="btn btn-sm btn-danger" 
+    onclick="deleteItem('/users/{{ $user->id }}', 'Delete {{ $user->name }}?')"
+>
+    <i class="fas fa-trash"></i> Delete
+</button>
                         </td>
                     </tr>
                     @empty

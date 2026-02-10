@@ -84,13 +84,14 @@
 @push('scripts')
 <script>
 async function deleteRole(roleId) {
-    if (!confirmDelete('Are you sure you want to delete this role?')) return;
-    
-    try {
-        const response = await fetchAPI(`/roles/${roleId}`, {
-            method: 'DELETE'
-        });
-        
+   @if(!in_array($role->name, ['admin', 'customer']))
+<button 
+    class="btn btn-sm btn-danger" 
+    onclick="deleteItem('/roles/{{ $role->id }}', 'Delete {{ $role->name }}?')"
+>
+    <i class="fas fa-trash"></i> Delete
+</button>
+@endif
         if (response.success) {
             showToast(response.message, 'success');
             setTimeout(() => location.reload(), 1000);

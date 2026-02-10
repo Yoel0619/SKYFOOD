@@ -89,9 +89,12 @@
                                     <a href="{{ route('deliveries.edit', $delivery->id) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteDelivery({{ $delivery->id }})">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                                   <button 
+    class="btn btn-sm btn-danger" 
+    onclick="deleteItem('/deliveries/{{ $delivery->id }}', 'Delete this delivery?')"
+>
+    <i class="fas fa-trash"></i> Delete
+</button>
                                 </div>
                             </td>
                         </tr>
