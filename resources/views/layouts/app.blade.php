@@ -7,9 +7,18 @@
     <title>@yield('title', 'Food Ordering System')</title>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    
-    @stack('styles')
+   <!-- Custom CSS -->
+<link rel="stylesheet" href="{{ asset('css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ asset('css/cart.css') }}">
+<link rel="stylesheet" href="{{ asset('css/product.css') }}">
+<link rel="stylesheet" href="{{ asset('css/animations.css') }}">
+<link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+@stack('styles')
 </head>
 <body>
     <!-- Navigation -->
@@ -30,12 +39,15 @@
                     </a>
                     <a href="{{ route('orders.index') }}">My Orders</a>
                 @endif
-                
-                @if(auth()->user()->isAdmin())
-                    <a href="{{ route('categories.index') }}">Categories</a>
-                    <a href="{{ route('orders.index') }}">Orders</a>
-                    <a href="{{ route('users.index') }}">Users</a>
-                @endif
+              @if(auth()->user()->isAdmin())
+    <a href="{{ route('categories.index') }}">Categories</a>
+    <a href="{{ route('orders.index') }}">Orders</a>
+    <a href="{{ route('payments.index') }}">Payments</a>
+    <a href="{{ route('deliveries.index') }}">Deliveries</a>
+    <a href="{{ route('users.index') }}">Users</a>
+    <a href="{{ route('roles.index') }}">Roles</a>
+@endif        
+
                 
                 <div class="nav-dropdown">
                     <a href="#" class="dropdown-toggle">
@@ -79,5 +91,10 @@
     <script src="{{ asset('js/app.js') }}"></script>
     
     @stack('scripts')
+    <!-- Custom JavaScript -->
+<script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ asset('js/dark-mode.js') }}"></script>
+
+@stack('scripts')
 </body>
 </html>

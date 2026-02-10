@@ -7,20 +7,31 @@
     <title>Register - Food Ordering System</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="auth-page">
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
                 <h1>🍕 FoodOrder</h1>
-                <p>Create your account to start ordering</p>
+                <p>Create your account to get started</p>
             </div>
             
             <form id="registerForm" action="{{ route('register.post') }}" method="POST">
                 @csrf
                 
+                <!-- Role Selection -->
                 <div class="form-group">
-                    <label for="name">Full Name</label>
+                    <label for="role">Register As *</label>
+                    <select class="form-control" id="role" name="role" required>
+                        <option value="">Select Account Type</option>
+                        <option value="customer" selected>Customer (Order Food)</option>
+                        <option value="admin">Admin (Manage System)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
                     <input 
                         type="text" 
                         class="form-control" 
@@ -32,7 +43,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email">Email Address *</label>
                     <input 
                         type="email" 
                         class="form-control" 
@@ -44,7 +55,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="phone">Phone Number</label>
+                    <label for="phone">Phone Number *</label>
                     <input 
                         type="text" 
                         class="form-control" 
@@ -56,7 +67,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="address">Delivery Address</label>
+                    <label for="address">Delivery Address *</label>
                     <textarea 
                         class="form-control" 
                         id="address" 
@@ -68,7 +79,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">Password *</label>
                     <input 
                         type="password" 
                         class="form-control" 
@@ -80,7 +91,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password_confirmation">Confirm Password</label>
+                    <label for="password_confirmation">Confirm Password *</label>
                     <input 
                         type="password" 
                         class="form-control" 
@@ -92,7 +103,7 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">
-                    Create Account
+                    <i class="fas fa-user-plus"></i> Create Account
                 </button>
             </form>
             

@@ -76,7 +76,7 @@
                 </div>
                 @endif
                 
-                <!-- Admin Actions -->
+                <!-- Admin Actions - UPDATE -->
                 @if(auth()->user()->isAdmin())
                 <div class="admin-actions-section">
                     <h3>Admin Actions</h3>
@@ -88,28 +88,31 @@
                             <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
                         <button class="btn btn-primary" onclick="updateOrderStatus({{ $order->id }})">
-                            Update Status
+                            <i class="fas fa-sync"></i> Update Status
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteOrder({{ $order->id }})">
+                            <i class="fas fa-trash"></i> Delete Order
                         </button>
                     </div>
                 </div>
                 @endif
                 
-                <!-- Customer Actions -->
+                <!-- Customer Actions - CANCEL -->
                 @if(auth()->user()->isCustomer() && $order->status == 'pending')
                 <div class="customer-actions">
                     <button class="btn btn-danger" onclick="cancelOrder({{ $order->id }})">
-                        Cancel Order
+                        <i class="fas fa-times"></i> Cancel Order
                     </button>
                 </div>
                 @endif
             </div>
         </div>
         
-        <!-- Order Items -->
+        <!-- Order Items - READ -->
         <div class="order-items-card">
             <div class="card">
                 <div class="card-header">
-                    <h2>Order Items</h2>
+                    <h2>Order Items ({{ $order->orderItems->count() }})</h2>
                 </div>
                 
                 <div class="order-items-list">
@@ -184,24 +187,24 @@
     .info-item label {
         display: block;
         font-size: 0.875rem;
-        color: #636e72;
+        color: #757575;
         margin-bottom: 0.25rem;
     }
     
     .info-item strong {
         font-size: 1.1rem;
-        color: var(--dark-color);
+        color: #454545;
     }
     
     .text-primary {
-        color: var(--primary-color) !important;
+        color: #fbaf32 !important;
     }
     
     .delivery-info,
     .order-notes {
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 2px solid var(--border-color);
+        border-top: 2px solid #f8f9fa;
     }
     
     .delivery-info h3,
@@ -212,14 +215,14 @@
     
     .delivery-info p,
     .order-notes p {
-        color: #636e72;
+        color: #757575;
     }
     
     .admin-actions-section,
     .customer-actions {
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 2px solid var(--border-color);
+        border-top: 2px solid #f8f9fa;
     }
     
     .admin-actions-section h3 {
@@ -230,16 +233,19 @@
     .status-update-form {
         display: flex;
         gap: 1rem;
+        flex-wrap: wrap;
     }
     
     .status-update-form select {
         flex: 1;
+        min-width: 150px;
     }
     
     .order-items-list {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        padding: 1.5rem;
     }
     
     .order-item-detail {
@@ -247,7 +253,7 @@
         grid-template-columns: 80px 1fr auto;
         gap: 1rem;
         padding: 1rem;
-        background: var(--light-color);
+        background: rgba(251, 175, 50, 0.05);
         border-radius: 8px;
     }
     
@@ -264,26 +270,27 @@
     }
     
     .item-category {
-        color: var(--primary-color);
+        color: #fbaf32;
         font-size: 0.875rem;
         margin-bottom: 0.25rem;
     }
     
     .item-price {
-        color: #636e72;
+        color: #757575;
         font-size: 0.875rem;
     }
     
     .item-subtotal {
         text-align: right;
         font-size: 1.25rem;
-        color: var(--primary-color);
+        color: #fbaf32;
+        font-weight: 700;
     }
     
     .order-summary-total {
         margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid var(--border-color);
+        padding: 1.5rem;
+        border-top: 2px solid #f8f9fa;
     }
     
     .summary-row {
@@ -293,14 +300,14 @@
     }
     
     .summary-divider {
-        border-top: 2px solid var(--border-color);
+        border-top: 2px dashed #e0e0e0;
         margin: 1rem 0;
     }
     
     .summary-total {
         font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--primary-color);
+        font-weight: 800;
+        color: #fbaf32;
     }
     
     @media (max-width: 768px) {
@@ -311,12 +318,17 @@
         .order-info-grid {
             grid-template-columns: 1fr;
         }
+        
+        .status-update-form {
+            flex-direction: column;
+        }
     }
 </style>
 @endpush
 
 @push('scripts')
 <script>
+// UPDATE order status (Admin)
 async function updateOrderStatus(orderId) {
     const status = document.getElementById('orderStatus').value;
     
@@ -337,6 +349,27 @@ async function updateOrderStatus(orderId) {
     }
 }
 
+// DELETE order (Admin)
+async function deleteOrder(orderId) {
+    if (!confirmDelete('Are you sure you want to DELETE this order permanently?')) return;
+    
+    try {
+        const response = await fetchAPI(`/orders/${orderId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.success) {
+            showToast(response.message, 'success');
+            setTimeout(() => {
+                window.location.href = '{{ route("orders.index") }}';
+            }, 1000);
+        }
+    } catch (error) {
+        showToast(error.message || 'Failed to delete order', 'error');
+    }
+}
+
+// CANCEL order (Customer)
 async function cancelOrder(orderId) {
     if (!confirm('Are you sure you want to cancel this order?')) return;
     

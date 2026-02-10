@@ -494,3 +494,69 @@ table tr:hover {
     flex: 1;
     min-width: 200px;
 }
+
+
+    .category-cards-container {
+        margin-bottom: 2rem;
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, .08);
+    }
+    
+    .category-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .category-card {
+        background: linear-gradient(135deg, rgba(251, 175, 50, 0.05), rgba(113, 154, 10, 0.05));
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 3px solid transparent;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        border-color: #fbaf32;
+        box-shadow: 0 8px 20px rgba(251, 175, 50, 0.3);
+    }
+    
+    .category-card.active {
+        background: linear-gradient(135deg, #fbaf32, #719a0a);
+        color: white;
+        border-color: #fbaf32;
+    }
+    
+    .category-icon {
+        font-size: 48px;
+        margin-bottom: 1rem;
+    }
+    
+    .category-icon img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .category-card h4 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .category-card.active h4,
+    .category-card.active p {
+        color: white;
+    }
+    
+    .category-card p {
+        font-size: 14px;
+        color: #757575;
+        margin: 0;
+    }

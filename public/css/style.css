@@ -418,6 +418,21 @@ a:focus {
 .btn-block {
     width: 100%;
 }
+/* CRUD Action Buttons with Icons */
+.btn i {
+    margin-right: 5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    flex: 1;
+    min-width: 100px;
+}
 
 /* Tables */
 .table-responsive {

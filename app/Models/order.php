@@ -23,6 +23,16 @@ class Order extends Model
         'total_amount' => 'decimal:2',
     ];
 
+    // Generate unique order number
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            $order->order_number = 'ORD-' . strtoupper(uniqid());
+        });
+    }
+
     // Relationship: Order belongs to a user
     public function user()
     {
@@ -35,13 +45,15 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    // Generate unique order number
-    protected static function boot()
+    // Relationship: Order has one payment
+    public function payment()
     {
-        parent::boot();
+        return $this->hasOne(Payment::class);
+    }
 
-        static::creating(function ($order) {
-            $order->order_number = 'ORD-' . strtoupper(uniqid());
-        });
+    // Relationship: Order has one delivery
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class);
     }
 }

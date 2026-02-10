@@ -12,40 +12,77 @@
             </a>
         @endif
     </div>
+   
+      <!-- Search & Filter Bar -->
+<div class="filter-bar">
+    <input 
+        type="text" 
+        class="form-control" 
+        id="searchInput" 
+        placeholder="🔍 Search products..."
+        value="{{ request('search') }}"
+    >
     
-    <!-- Search & Filter Bar -->
-    <div class="filter-bar">
-        <input 
-            type="text" 
-            class="form-control" 
-            id="searchInput" 
-            placeholder="🔍 Search products..."
-            value="{{ request('search') }}"
-        >
+    <select class="form-control" id="categoryFilter">
+        <option value="">All Categories</option>
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
+            </option>
+        @endforeach
+    </select>
+    
+    <select class="form-control" id="statusFilter">
+        <option value="">All Status</option>
+        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
+        <option value="unavailable" {{ request('status') == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
+    </select>
+    
+    <button class="btn btn-secondary" onclick="applyFilters()">
+        <i class="fas fa-filter"></i> Filter
+    </button>
+    
+    <button class="btn btn-outline" onclick="clearFilters()">
+        <i class="fas fa-times"></i> Clear
+    </button>
+</div>
+
+<!-- Category Cards (Visual Selection) -->
+<div class="category-cards-container">
+    <h3 style="margin-bottom: 1rem; color: #454545;">
+        <i class="fas fa-utensils"></i> Browse by Category
+    </h3>
+    <div class="category-cards">
+        <div class="category-card {{ !request('category') ? 'active' : '' }}" onclick="selectCategory('')">
+            <div class="category-icon">🍽️</div>
+            <h4>All Items</h4>
+            <p>{{ $products->total() }} items</p>
+        </div>
         
-        <select class="form-control" id="categoryFilter">
-            <option value="">All Categories</option>
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                    {{ $category->name }}
-                </option>
-            @endforeach
-        </select>
-        
-        <select class="form-control" id="statusFilter">
-            <option value="">All Status</option>
-            <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
-            <option value="unavailable" {{ request('status') == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
-        </select>
-        
-        <button class="btn btn-secondary" onclick="applyFilters()">
-            Filter
-        </button>
-        
-        <button class="btn btn-outline" onclick="clearFilters()">
-            Clear
-        </button>
+        @foreach($categories as $category)
+        <div class="category-card {{ request('category') == $category->id ? 'active' : '' }}" 
+             onclick="selectCategory({{ $category->id }})">
+            <div class="category-icon">
+                @if($category->image)
+                    <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
+                @else
+                    @switch($category->name)
+                        @case('Pizza') 🍕 @break
+                        @case('Burgers') 🍔 @break
+                        @case('Drinks') 🥤 @break
+                        @case('Pasta') 🍝 @break
+                        @case('Salads') 🥗 @break
+                        @case('Desserts') 🍰 @break
+                        @default 🍴
+                    @endswitch
+                @endif
+            </div>
+            <h4>{{ $category->name }}</h4>
+            <p>{{ $category->products->count() }} items</p>
+        </div>
+        @endforeach
     </div>
+</div>
     
     <!-- Products Grid -->
     <div class="products-grid">

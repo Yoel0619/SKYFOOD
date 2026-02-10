@@ -1,0 +1,181 @@
+/*******************************/
+/******** Dark Mode CSS ********/
+/*******************************/
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-color: #fbaf32;
+    --secondary-color: #719a0a;
+    --dark-color: #e0e0e0;
+    --text-color: #b0b0b0;
+    --light-bg: #1a1a1a;
+    --white: #2d2d2d;
+    --border-color: #404040;
+    --shadow: 0 2px 15px rgba(0, 0, 0, .5);
+    --shadow-hover: 0 5px 30px rgba(0, 0, 0, .7);
+}
+
+body.dark-mode {
+    background: #1a1a1a;
+    color: #b0b0b0;
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #fbaf32, #719a0a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(251, 175, 50, 0.4);
+    z-index: 1000;
+    transition: all 0.3s;
+    border: 3px solid transparent;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1) rotate(180deg);
+    box-shadow: 0 8px 30px rgba(251, 175, 50, 0.6);
+}
+
+.dark-mode-toggle i {
+    font-size: 28px;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+body.dark-mode .dark-mode-toggle {
+    background: linear-gradient(135deg, #2d2d2d, #404040);
+    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+}
+
+/* Dark Mode Navbar */
+body.dark-mode .navbar {
+    background: #2d2d2d;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .nav-menu a {
+    color: #e0e0e0;
+}
+
+body.dark-mode .nav-menu a:hover {
+    background: rgba(251, 175, 50, 0.2);
+}
+
+body.dark-mode .dropdown-menu {
+    background: #2d2d2d;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark Mode Cards */
+body.dark-mode .card {
+    background: #2d2d2d;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .card-header {
+    border-bottom: 2px solid #404040;
+}
+
+body.dark-mode .stat-card {
+    background: #2d2d2d;
+}
+
+body.dark-mode .stat-card::before {
+    background: linear-gradient(180deg, #fbaf32, #719a0a);
+}
+
+/* Dark Mode Forms */
+body.dark-mode .form-control {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #e0e0e0;
+}
+
+body.dark-mode .form-control:focus {
+    background: #2d2d2d;
+    border-color: #fbaf32;
+}
+
+body.dark-mode .filter-bar {
+    background: #2d2d2d;
+}
+
+/* Dark Mode Tables */
+body.dark-mode table th {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+body.dark-mode table tr:hover {
+    background: rgba(251, 175, 50, 0.1);
+}
+
+/* Dark Mode Products */
+body.dark-mode .product-card {
+    background: #2d2d2d;
+}
+
+body.dark-mode .product-info {
+    background: #2d2d2d;
+}
+
+body.dark-mode .product-footer {
+    border-top: 2px solid #404040;
+}
+
+/* Dark Mode Cart */
+body.dark-mode .cart-item {
+    background: linear-gradient(135deg, rgba(251, 175, 50, 0.05), rgba(113, 154, 10, 0.05));
+    border-color: rgba(251, 175, 50, 0.2);
+}
+
+body.dark-mode .cart-item-quantity {
+    background: #2d2d2d;
+}
+
+/* Dark Mode Auth Pages */
+body.dark-mode .auth-page {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+body.dark-mode .auth-card {
+    background: rgba(45, 45, 45, 0.95);
+}
+
+body.dark-mode .auth-footer {
+    border-top: 2px solid #404040;
+}
+
+/* Dark Mode Toast */
+body.dark-mode .toast {
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+/* Dark Mode Empty States */
+body.dark-mode .empty-state h3 {
+    color: #e0e0e0;
+}
+
+/* Smooth Transition for Dark Mode */
+body,
+.navbar,
+.card,
+.form-control,
+.product-card,
+.cart-item,
+.auth-card {
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
