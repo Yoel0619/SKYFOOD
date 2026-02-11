@@ -13,7 +13,7 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>🍕 FoodOrder</h1>
+                <h1>SKYFOOD🌃💫</h1>
                 <p>Create your account to get started</p>
             </div>
             

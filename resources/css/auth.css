@@ -2,12 +2,6 @@
 /******* Auth Pages CSS ********/
 /*******************************/
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 .auth-page {
     background: linear-gradient(135deg, #fbaf32 0%, #719a0a 100%);
     min-height: 100vh;
@@ -19,7 +13,7 @@
     overflow: hidden;
 }
 
-/* Animated Background Circles */
+/* Animated Background */
 .auth-page::before {
     content: "";
     position: absolute;
@@ -56,11 +50,11 @@
 .auth-container {
     width: 100%;
     max-width: 500px;
-    z-index: 10;
+    z-index: 1;
 }
 
 .auth-card {
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -81,11 +75,11 @@
 
 .auth-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .auth-header h1 {
-    font-size: 2.5rem;
+    font-size: 42px;
     font-weight: 900;
     margin-bottom: 0.5rem;
     font-family: 'Nunito', sans-serif;
@@ -93,21 +87,27 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .auth-header p {
     color: #757575;
-    font-size: 1rem;
-    margin: 0;
+    font-size: 16px;
 }
 
 /* Form Styling */
-.auth-card form {
-    margin-top: 2rem;
-}
-
 .auth-card .form-group {
     margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .auth-card .form-group label {
@@ -116,7 +116,7 @@
     font-weight: 600;
     color: #454545;
     font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
+    transition: all 0.3s;
 }
 
 .auth-card .form-control {
@@ -127,42 +127,25 @@
     font-size: 15px;
     transition: all 0.3s;
     background: #fff;
-    font-family: 'Open Sans', sans-serif;
 }
 
 .auth-card .form-control:focus {
     border-color: #fbaf32;
     box-shadow: 0 0 0 4px rgba(251, 175, 50, 0.1);
     outline: none;
+    transform: translateY(-2px);
 }
 
-.auth-card .form-control.error {
-    border-color: #d63031;
-}
-
-.error-message {
-    color: #d63031;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-    display: block;
-}
-
-/* Grid Layout for Forms */
-.grid {
-    display: grid;
-    gap: 1.5rem;
-}
-
-.grid-2 {
-    grid-template-columns: repeat(2, 1fr);
+.auth-card .form-control:focus + label {
+    color: #fbaf32;
 }
 
 /* Button Styling */
 .btn-block {
     width: 100%;
     margin-top: 1.5rem;
-    padding: 16px;
-    font-size: 1.1rem;
+    padding: 15px;
+    font-size: 18px;
     font-weight: 700;
     background: linear-gradient(135deg, #fbaf32, #719a0a);
     border: none;
@@ -172,7 +155,6 @@
     transition: all 0.4s;
     position: relative;
     overflow: hidden;
-    font-family: 'Nunito', sans-serif;
 }
 
 .btn-block::before {
@@ -213,7 +195,7 @@
 .auth-footer p {
     color: #757575;
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 15px;
 }
 
 .auth-footer a {
@@ -225,6 +207,7 @@
 
 .auth-footer a:hover {
     color: #719a0a;
+    text-decoration: underline;
 }
 
 /* Demo Credentials */
@@ -234,22 +217,32 @@
     background: linear-gradient(135deg, rgba(251, 175, 50, 0.1), rgba(113, 154, 10, 0.1));
     border-radius: 12px;
     border-left: 4px solid #fbaf32;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(251, 175, 50, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(251, 175, 50, 0);
+    }
 }
 
 .demo-credentials h4 {
     color: #454545;
     margin-bottom: 1rem;
-    font-size: 1rem;
+    font-size: 16px;
     font-weight: 700;
 }
 
 .demo-credentials p {
     margin: 0.5rem 0;
-    font-size: 0.9rem;
+    font-size: 14px;
     color: #757575;
     cursor: pointer;
     transition: all 0.3s;
-    padding: 10px;
+    padding: 8px;
     border-radius: 6px;
 }
 
@@ -264,93 +257,50 @@
     font-weight: 700;
 }
 
-/* Toast */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    padding: 1rem 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    transform: translateX(400px);
-    transition: transform 0.3s;
-    z-index: 9999;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
+/* Input Icons */
+.input-with-icon {
+    position: relative;
 }
 
-.toast.show {
-    transform: translateX(0);
+.input-with-icon i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    transition: all 0.3s;
 }
 
-.toast.success {
-    border-left: 5px solid #00b894;
-    color: #00b894;
+.input-with-icon .form-control {
+    padding-left: 50px;
 }
 
-.toast.error {
-    border-left: 5px solid #d63031;
-    color: #d63031;
+.input-with-icon .form-control:focus ~ i {
+    color: #fbaf32;
 }
 
-/* Spinner */
-.spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999;
+    transition: all 0.3s;
 }
 
-.spinner-overlay.active {
-    display: flex;
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-    border: 6px solid rgba(255, 255, 255, 0.3);
-    border-top: 6px solid #fbaf32;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.password-toggle:hover {
+    color: #fbaf32;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .grid-2 {
-        grid-template-columns: 1fr;
-    }
-    
+@media (max-width: 576px) {
     .auth-card {
         padding: 2rem 1.5rem;
     }
     
     .auth-header h1 {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .auth-container {
-        max-width: 100%;
-    }
-    
-    .auth-card {
-        padding: 1.5rem;
-    }
-    
-    .auth-header h1 {
-        font-size: 1.8rem;
+        font-size: 32px;
     }
 }

@@ -28,7 +28,7 @@
                                 @if($item['image'])
                                     <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}">
                                 @else
-                                    <img src="https://via.placeholder.com/100?text=Food" alt="{{ $item['name'] }}">
+                                    <img src="https://via.placeholder.com/80?text=Food" alt="{{ $item['name'] }}">
                                 @endif
                             </div>
                             
@@ -51,7 +51,9 @@
                             
                             <div class="cart-item-subtotal">
                                 <p>Subtotal</p>
-                                <h3 id="subtotal-{{ $item['id'] }}">TZS {{ number_format($item['price'] * $item['quantity'], 0) }}</h3>
+                                <h3 id="subtotal-{{ $item['id'] }}">
+                                    TZS {{ number_format($item['price'] * $item['quantity'], 0) }}
+                                </h3>
                             </div>
                             
                             <button class="cart-item-remove" onclick="removeFromCart({{ $item['id'] }})">
@@ -113,262 +115,150 @@
 </div>
 @endsection
 
+
 @push('styles')
 <style>
+/* ===== COMPACT CART DESIGN ===== */
+
+.cart-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: 6px;
+}
+
+.cart-item-image img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.cart-item-details h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+}
+
+.cart-item-price {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.cart-item-quantity {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+.cart-item-quantity button {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    border: 1px solid var(--primary-color);
+    background: #fff;
+    color: var(--primary-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cart-item-quantity input {
+    width: 45px;
+    padding: 5px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.cart-item-subtotal p {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+}
+
+.cart-item-subtotal h3 {
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.cart-item-remove {
+    background: var(--danger-color);
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.empty-cart-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.summary-content {
+    padding: 1rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.7rem;
+    font-size: 0.9rem;
+}
+
+.summary-divider {
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0;
+}
+
+.summary-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 0.7rem;
+    padding: 8px;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
     .cart-container {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-    
-    .cart-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+        grid-template-columns: 1fr;
     }
     
     .cart-item {
-        display: grid;
-        grid-template-columns: 100px 1fr auto auto auto;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 1.5rem;
-        background: var(--light-color);
-        border-radius: 8px;
+        grid-template-columns: 70px 1fr;
+        gap: 0.8rem;
     }
     
-    .cart-item-image img {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-    
-    .cart-item-details h3 {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .cart-item-price {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-    
-    .cart-item-quantity {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-    
-    .cart-item-quantity button {
-        width: 35px;
-        height: 35px;
-        border: 2px solid var(--primary-color);
-        background: white;
-        color: var(--primary-color);
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 1.2rem;
-        transition: all 0.3s;
-    }
-    
-    .cart-item-quantity button:hover {
-        background: var(--primary-color);
-        color: white;
-    }
-    
-    .cart-item-quantity input {
-        width: 60px;
-        text-align: center;
-        padding: 8px;
-        border: 2px solid var(--border-color);
-        border-radius: 6px;
-    }
-    
+    .cart-item-quantity,
     .cart-item-subtotal {
-        text-align: right;
+        grid-column: 1 / -1;
     }
-    
-    .cart-item-subtotal p {
-        font-size: 0.875rem;
-        color: #636e72;
-        margin-bottom: 0.25rem;
-    }
-    
-    .cart-item-subtotal h3 {
-        color: var(--primary-color);
-        font-size: 1.25rem;
-    }
-    
-    .cart-item-remove {
-        background: var(--danger-color);
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .cart-item-remove:hover {
-        background: #c0392b;
-    }
-    
-    .empty-cart {
-        text-align: center;
-        padding: 4rem 2rem;
-    }
-    
-    .empty-cart-icon {
-        font-size: 5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-cart h3 {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .empty-cart p {
-        color: #636e72;
-        margin-bottom: 1.5rem;
-    }
-    
-    .summary-content {
-        padding: 1.5rem;
-    }
-    
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        font-size: 1rem;
-    }
-    
-    .summary-divider {
-        border-top: 2px solid var(--border-color);
-        margin: 1.5rem 0;
-    }
-    
-    .summary-total {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--primary-color);
-    }
-    
-    .btn-block {
-        width: 100%;
-        margin-top: 1rem;
-    }
-    
-    @media (max-width: 768px) {
-        .cart-container {
-            grid-template-columns: 1fr;
-        }
-        
-        .cart-item {
-            grid-template-columns: 80px 1fr;
-            gap: 1rem;
-        }
-        
-        .cart-item-quantity,
-        .cart-item-subtotal {
-            grid-column: 1 / -1;
-        }
-    }
+}
 </style>
-@endpush
-
-@push('scripts')
-<script>
-async function updateQuantity(productId, newQuantity) {
-    if (newQuantity < 1) return;
-    
-    try {
-        const response = await fetchAPI('/cart/update', {
-            method: 'POST',
-            body: JSON.stringify({
-                product_id: productId,
-                quantity: parseInt(newQuantity)
-            })
-        });
-        
-        if (response.success) {
-            // Update quantity input
-            document.getElementById(`qty-${productId}`).value = newQuantity;
-            
-            // Update subtotal
-            document.getElementById(`subtotal-${productId}`).textContent = 
-                'TZS ' + response.subtotal.toLocaleString();
-            
-            // Update cart total
-            document.getElementById('cart-total').textContent = 
-                'TZS ' + response.total.toLocaleString();
-            document.getElementById('final-total').textContent = 
-                'TZS ' + response.total.toLocaleString();
-            
-            showToast(response.message, 'success');
-        }
-    } catch (error) {
-        showToast(error.message || 'Failed to update cart', 'error');
-    }
-}
-
-async function removeFromCart(productId) {
-    if (!confirm('Remove this item from cart?')) return;
-    
-    try {
-        const response = await fetchAPI('/cart/remove', {
-            method: 'POST',
-            body: JSON.stringify({
-                product_id: productId
-            })
-        });
-        
-        if (response.success) {
-            // Remove item from DOM
-            document.getElementById(`cart-item-${productId}`).remove();
-            
-            // Update cart badge
-            updateCartBadge();
-            
-            // If cart is empty, reload page
-            if (response.cart_count === 0) {
-                location.reload();
-            } else {
-                // Update totals
-                document.getElementById('cart-total').textContent = 
-                    'TZS ' + response.total.toLocaleString();
-                document.getElementById('final-total').textContent = 
-                    'TZS ' + response.total.toLocaleString();
-            }
-            
-            showToast(response.message, 'success');
-        }
-    } catch (error) {
-        showToast(error.message || 'Failed to remove item', 'error');
-    }
-}
-
-async function clearCart() {
-    if (!confirm('Are you sure you want to clear your cart?')) return;
-    
-    try {
-        const response = await fetchAPI('/cart/clear', {
-            method: 'POST'
-        });
-        
-        if (response.success) {
-            showToast(response.message, 'success');
-            updateCartBadge();
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
-    } catch (error) {
-        showToast(error.message || 'Failed to clear cart', 'error');
-    }
-}
-</script>
 @endpush

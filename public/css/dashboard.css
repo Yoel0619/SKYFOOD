@@ -1,22 +1,22 @@
 /*******************************/
-/***** Dashboard Extras ********/
+/***** Dashboard Compact ********/
 /*******************************/
 
 /* Order Status Timeline */
 .order-timeline {
     display: flex;
     justify-content: space-between;
-    margin: 2rem 0;
+    margin: 1rem 0;
     position: relative;
 }
 
 .order-timeline::before {
     content: "";
     position: absolute;
-    top: 20px;
+    top: 15px;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background: #e0e0e0;
     z-index: 0;
 }
@@ -29,238 +29,85 @@
 }
 
 .timeline-step .step-icon {
-    width: 40px;
-    height: 40px;
-    background: #e0e0e0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 10px;
-    color: #fff;
-    font-weight: 700;
-    transition: all 0.3s;
-}
-
-.timeline-step.active .step-icon {
-    background: linear-gradient(135deg, #fbaf32, #719a0a);
-    box-shadow: 0 4px 15px rgba(251, 175, 50, 0.4);
-}
-
-.timeline-step.completed .step-icon {
-    background: #00b894;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 5px;
+    font-size: 12px;
 }
 
 .timeline-step p {
-    font-size: 14px;
-    font-weight: 600;
-    color: #757575;
-    margin: 0;
-}
-
-.timeline-step.active p {
-    color: #fbaf32;
+    font-size: 12px;
 }
 
 /* Recent Orders Widget */
 .recent-orders-widget {
-    background: #fff;
-    border-radius: 15px;
-    padding: 0;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, .08);
+    border-radius: 10px;
 }
 
 .order-item-widget {
-    padding: 1.5rem;
-    border-bottom: 1px solid #f8f9fa;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.3s;
-}
-
-.order-item-widget:hover {
-    background: rgba(251, 175, 50, 0.05);
-}
-
-.order-item-widget:last-child {
-    border-bottom: none;
+    padding: 1rem;
 }
 
 .order-info h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #454545;
-    margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .order-info p {
-    font-size: 13px;
-    color: #757575;
-    margin: 0;
+    font-size: 12px;
 }
 
 .order-amount {
-    font-size: 20px;
-    font-weight: 800;
-    color: #fbaf32;
-    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
 }
 
 /* Chart Container */
 .chart-container {
-    position: relative;
-    height: 300px;
-    padding: 2rem;
+    height: auto;
+    padding: 1rem;
 }
 
 /* Activity Feed */
 .activity-feed {
-    padding: 1.5rem 2rem;
+    padding: 1rem;
 }
 
 .activity-item {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-}
-
-.activity-item::before {
-    content: "";
-    position: absolute;
-    left: 9px;
-    top: 30px;
-    bottom: -15px;
-    width: 2px;
-    background: #e0e0e0;
-}
-
-.activity-item:last-child::before {
-    display: none;
-}
-
-.activity-icon {
-    width: 20px;
-    height: 20px;
-    background: #fbaf32;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 5px;
-    box-shadow: 0 0 0 4px rgba(251, 175, 50, 0.2);
+    margin-bottom: 1rem;
 }
 
 .activity-content h5 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #454545;
-    margin-bottom: 3px;
+    font-size: 13px;
 }
 
 .activity-content p {
-    font-size: 13px;
-    color: #757575;
-    margin: 0;
-}
-
-.activity-time {
     font-size: 12px;
-    color: #999;
-    margin-top: 5px;
 }
 
 /* Quick Stats */
 .quick-stat {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(251, 175, 50, 0.05);
-    border-radius: 10px;
-    margin-bottom: 1rem;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
 }
 
 .quick-stat-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #fbaf32, #719a0a);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
 }
 
 .quick-stat-content h4 {
-    font-size: 24px;
-    font-weight: 800;
-    color: #fbaf32;
-    margin: 0;
+    font-size: 18px;
 }
 
 .quick-stat-content p {
-    font-size: 13px;
-    color: #757575;
-    margin: 0;
+    font-size: 12px;
 }
 
 /* Progress Bar */
 .progress-container {
-    margin-bottom: 1.5rem;
-}
-
-.progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.progress-label span:first-child {
-    font-weight: 600;
-    color: #454545;
-}
-
-.progress-label span:last-child {
-    color: #fbaf32;
-    font-weight: 700;
+    margin-bottom: 1rem;
 }
 
 .progress-bar-container {
-    height: 10px;
-    background: #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #fbaf32, #719a0a);
-    border-radius: 10px;
-    transition: width 0.6s ease;
-}
-body {
-  background-image: url(  '../images/dashboard.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  min-height: 100vh;
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
-.dashboard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.45);
-  z-index: 0;
-}
-
-.dashboard > * {
-  position: relative;
-  z-index: 1;
+    height: 8px;
 }
