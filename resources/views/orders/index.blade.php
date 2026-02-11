@@ -58,71 +58,68 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($orders as $order)
-                    <tr>
-                        <td><strong>{{ $order->order_number }}</strong></td>
-                        @if(auth()->user()->isAdmin())
-                            <td>{{ $order->user->name }}</td>
-                        @endif
-                        <td>{{ $order->orderItems->count() }} items</td>
-                        <td>TZS {{ number_format($order->total_amount, 0) }}</td>
-                        <td>
-                            @if($order->status == 'pending')
-                                <span class="badge badge-warning">Pending</span>
-                            @elseif($order->status == 'processing')
-                                <span class="badge badge-primary">Processing</span>
-                            @elseif($order->status == 'completed')
-                                <span class="badge badge-success">Completed</span>
-                            @else
-                                <span class="badge badge-danger">Cancelled</span>
-                            @endif
-                        </td>
-                        <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
-                        <td>
-                            <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-primary">
-                                View
-                            </a>
-                            @if(auth()->user()->isAdmin())
-    <button 
-        class="btn btn-sm btn-danger" 
-        onclick="deleteItem('/orders/{{ $order->id }}', 'Delete order {{ $order->order_number }}?')"
-    >
-        <i class="fas fa-trash"></i> Delete
-    </button>
-@endif
-                            
-                            @if(auth()->user()->isCustomer() && $order->status == 'pending')
-                                <button 
-                                    class="btn btn-sm btn-danger" 
-                                    onclick="cancelOrder({{ $order->id }})"
-                                >
-                                    Cancel
-                                </button>
-                            @endif
-                            
-                            @if(auth()->user()->isAdmin())
-                                <button 
-                                    class="btn btn-sm btn-warning" 
-                                    onclick="updateStatus({{ $order->id }})"
-                                >
-                                    Update Status
-                                </button>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ auth()->user()->isAdmin() ? '7' : '6' }}" style="text-align: center; padding: 2rem;">
-                            <p>No orders found</p>
-                            @if(auth()->user()->isCustomer())
-                                <a href="{{ route('products.index') }}" class="btn btn-primary" style="margin-top: 1rem;">
-                                    Start Shopping
-                                </a>
-                            @endif
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
+    @forelse($orders as $order)
+    <tr>
+        <td><strong>{{ $order->order_number }}</strong></td>
+        <td>{{ $order->user->name }}</td>
+        <td>
+            <strong>{{ $order->orderItems->count() }} items</strong>
+            <div style="font-size: 0.85rem; color: #757575; margin-top: 0.25rem;">
+                @foreach($order->orderItems->take(2) as $item)
+                    <span class="badge badge-primary" style="margin: 0.25rem;">
+                        {{ $item->quantity }}x {{ $item->product->name }}
+                    </span>
+                @endforeach
+                @if($order->orderItems->count() > 2)
+                    <span class="badge" style="background: #95a5a6;">+{{ $order->orderItems->count() - 2 }} more</span>
+                @endif
+            </div>
+        </td>
+        <td><strong style="color: #fbaf32;">TZS {{ number_format($order->total_amount, 0) }}</strong></td>
+        <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
+        <td>
+            @if($order->status == 'pending')
+                <span class="badge badge-warning">⏳ Pending</span>
+            @elseif($order->status == 'processing')
+                <span class="badge badge-primary">🔄 Processing</span>
+            @elseif($order->status == 'completed')
+                <span class="badge badge-success">✅ Completed</span>
+            @else
+                <span class="badge badge-danger">❌ Cancelled</span>
+            @endif
+        </td>
+        <td>
+            <div class="action-buttons">
+                <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button 
+                        class="btn btn-sm btn-danger" 
+                        onclick="deleteItem('/orders/{{ $order->id }}', 'Delete order {{ $order->order_number }}?')"
+                    >
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                @endif
+            </div>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="7" style="text-align: center; padding: 3rem;">
+            <div style="font-size: 60px; margin-bottom: 1rem;">📦</div>
+            <h3>No Orders Yet</h3>
+            <p style="color: #757575; margin-bottom: 1.5rem;">Start shopping to create your first order!</p>
+            <a href="{{ route('products.index') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-cart"></i> Browse Products
+            </a>
+        </td>
+    </tr>
+    @endforelse
+</tbody>
             </table>
         </div>
         

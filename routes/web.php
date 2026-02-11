@@ -72,10 +72,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-    // Orders (admin actions)
-    Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+     // Orders - COMPLETE CRUD
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
-    
     // Payments Management
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
@@ -93,4 +97,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/deliveries/{delivery}/edit', [DeliveryController::class, 'edit'])->name('deliveries.edit');
     Route::put('/deliveries/{delivery}', [DeliveryController::class, 'update'])->name('deliveries.update');
     Route::delete('/deliveries/{delivery}', [DeliveryController::class, 'destroy'])->name('deliveries.destroy');
+});
+
+
+Route::get('/products/create', [ProductController::class, 'create'])
+    ->name('products.create');
+
+    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('products', ProductController::class);
 });

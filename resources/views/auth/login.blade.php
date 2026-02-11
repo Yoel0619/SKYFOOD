@@ -52,11 +52,7 @@
                 <p>Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
             </div>
             
-            <div class="demo-credentials">
-                <h4>Demo Credentials:</h4>
-                <p><strong>Admin:</strong> admin@foodorder.com / password123</p>
-                <p><strong>Customer:</strong> customer@example.com / password123</p>
-            </div>
+           
         </div>
     </div>
     

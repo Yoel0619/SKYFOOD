@@ -45,15 +45,21 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    // Check if user is admin
+    // Helper method: Check if user is admin
     public function isAdmin()
     {
-        return $this->role->name === 'admin';
+        return $this->role && $this->role->name === 'admin';
     }
 
-    // Check if user is customer
+    // Helper method: Check if user is customer
     public function isCustomer()
     {
-        return $this->role->name === 'customer';
+        return $this->role && $this->role->name === 'customer';
+    }
+
+    // Helper method: Check if user is delivery person
+    public function isDelivery()
+    {
+        return $this->role && $this->role->name === 'delivery';
     }
 }

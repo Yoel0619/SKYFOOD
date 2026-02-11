@@ -11,31 +11,32 @@ class ProductController extends Controller
 {
     // Display all products
     public function index(Request $request)
-    {
-        $query = Product::with('category');
+{
+    $query = Product::with('category');
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
-        }
-
-        // Filter by category
-        if ($request->has('category') && $request->category != '') {
-            $query->where('category_id', $request->category);
-        }
-
-        // Filter by status
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
-        }
-
-        $products = $query->paginate(12);
-        $categories = Category::where('status', 'active')->get();
-
-        return view('products.index', compact('products', 'categories'));
+    // Search
+    if ($request->has('search') && $request->search != '') {
+        $query->where('name', 'like', '%' . $request->search . '%')
+              ->orWhere('description', 'like', '%' . $request->search . '%');
     }
 
+    // Filter by category
+    if ($request->has('category') && $request->category != '') {
+        $query->where('category_id', $request->category);
+    }
+
+    // Filter by status
+    if ($request->has('status') && $request->status != '') {
+        $query->where('status', $request->status);
+    }
+
+    $products = $query->orderBy('created_at', 'desc')->paginate(12);
+    
+    // Get all active categories for filter
+    $categories = \App\Models\Category::where('status', 'active')->get();
+
+    return view('products.index', compact('products', 'categories'));
+}
     // Show create form
     public function create()
     {
@@ -156,3 +157,5 @@ class ProductController extends Controller
         ]);
     }
 }
+
+
